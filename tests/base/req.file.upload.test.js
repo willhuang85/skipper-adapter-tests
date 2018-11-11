@@ -18,19 +18,24 @@ var actionFixtures = {
 };
 
 
-describe('req.file(...).upload(...) ::', function() {
+describe('req.file(...).upload(...) ::', function () {
   var suite = Lifecycle();
   before(suite.setup);
   after(suite.teardown);
 
+  beforeEach(function (done) {
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
 
-  it('bind a file uploader action', function() {
+  it('bind a file uploader action', function () {
     suite.app.post('/upload', actionFixtures.uploadAvatar);
   });
 
 
 
-  it('sends a multi-part file upload request', function(done) {
+  it('sends a multi-part file upload request', function (done) {
 
     // Builds an HTTP request
     var httpRequest = Uploader({
@@ -45,7 +50,7 @@ describe('req.file(...).upload(...) ::', function() {
 
 
 
-  it('should have uploaded a file to `suite.outputDir`', function(done) {
+  it('should have uploaded a file to `suite.outputDir`', function (done) {
 
     // Check that a file landed
     adapter.ls(suite.outputDir.path, function (err, filesUploaded) {
@@ -55,15 +60,15 @@ describe('req.file(...).upload(...) ::', function() {
       // Check that its contents are correct
       var uploadedFileContents = '';
       adapter.read(filesUploaded[0])
-      .on('data', function(buffer){
-        uploadedFileContents += buffer.toString();
-      })
-      .on('error', function(err){ return done(err); })
-      .on('end', function(){
-        var srcFileContents = fsx.readFileSync(suite.srcFiles[0].path);
-        assert(uploadedFileContents === srcFileContents.toString());
-        done();
-      });
+        .on('data', function (buffer) {
+          uploadedFileContents += buffer.toString();
+        })
+        .on('error', function (err) { return done(err); })
+        .on('end', function () {
+          var srcFileContents = fsx.readFileSync(suite.srcFiles[0].path);
+          assert(uploadedFileContents === srcFileContents.toString());
+          done();
+        });
     });
 
   });
