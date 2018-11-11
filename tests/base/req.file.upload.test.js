@@ -23,11 +23,6 @@ describe('req.file(...).upload(...) ::', function () {
   before(suite.setup);
   after(suite.teardown);
 
-  beforeEach(function (done) {
-    setTimeout(function () {
-      done();
-    }, 1000);
-  });
 
   it('bind a file uploader action', function () {
     suite.app.post('/upload', actionFixtures.uploadAvatar);

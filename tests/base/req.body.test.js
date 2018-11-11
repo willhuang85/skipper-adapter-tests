@@ -13,18 +13,23 @@ var fsx = require('fs-extra');
 
 
 
-describe('this adapter\'s impact on `req.body` ::', function() {
+describe('this adapter\'s impact on `req.body` ::', function () {
   var suite = Lifecycle();
   before(suite.setup);
   after(suite.teardown);
 
+  beforeEach(function (done) {
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
 
   // Object of params accessible in req.body in the upload action
   var bodyParamsThatWereAccessible = {};
 
 
-  it('binds a file uploader action', function() {
-    suite.app.post('/upload', function(req, res) {
+  it('binds a file uploader action', function () {
+    suite.app.post('/upload', function (req, res) {
       bodyParamsThatWereAccessible = _.cloneDeep(req.body);
 
       req.file('avatar')
@@ -32,7 +37,7 @@ describe('this adapter\'s impact on `req.body` ::', function() {
           adapter: adapter,
           dirname: req.__FILE_PARSER_TESTS__DIRNAME__AVATAR,
           saveAs: req.__FILE_PARSER_TESTS__FILENAME__AVATAR
-        }, function(err, files) {
+        }, function (err, files) {
           if (err) res.status(500).send(err);
           res.sendStatus(200);
         });
@@ -41,7 +46,7 @@ describe('this adapter\'s impact on `req.body` ::', function() {
 
 
 
-  it('sends a multi-part file upload request', function(done) {
+  it('sends a multi-part file upload request', function (done) {
 
     // Create a readable binary stream to upload
     var smallFile = suite.srcFiles[0];
@@ -61,32 +66,32 @@ describe('this adapter\'s impact on `req.body` ::', function() {
 
   });
 
-  it('should have been able to access the body parameters passed in the upload request', function() {
+  it('should have been able to access the body parameters passed in the upload request', function () {
     assert(bodyParamsThatWereAccessible);
     assert(bodyParamsThatWereAccessible.foo);
     assert(bodyParamsThatWereAccessible.bar);
   });
 
 
-  it('should have uploaded a file to expected location using provided `dirname` and `saveAs` options', function(done) {
+  it('should have uploaded a file to expected location using provided `dirname` and `saveAs` options', function (done) {
 
     // Check that a file landed
-    adapter.ls(suite.outputDir.path, function(err, filesThatLanded) {
+    adapter.ls(suite.outputDir.path, function (err, filesThatLanded) {
       if (err) return done(err);
-      assert(filesThatLanded.length === 1, 'one file should exist at ' + suite.outputDir.path + ' -- but instead there are '+filesThatLanded.length);
+      assert(filesThatLanded.length === 1, 'one file should exist at ' + suite.outputDir.path + ' -- but instead there are ' + filesThatLanded.length);
 
       // Check that its contents are correct
       var uploadedFileContents = '';
       adapter.read(filesThatLanded[0])
-      .on('data', function(buffer){
-        uploadedFileContents += buffer.toString();
-      })
-      .on('error', function(err){ return done(err); })
-      .on('end', function(){
-        var srcFileContents = fsx.readFileSync(suite.srcFiles[0].path);
-        assert(uploadedFileContents === srcFileContents.toString());
-        done();
-      });
+        .on('data', function (buffer) {
+          uploadedFileContents += buffer.toString();
+        })
+        .on('error', function (err) { return done(err); })
+        .on('end', function () {
+          var srcFileContents = fsx.readFileSync(suite.srcFiles[0].path);
+          assert(uploadedFileContents === srcFileContents.toString());
+          done();
+        });
     });
 
   });
